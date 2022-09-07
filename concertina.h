@@ -112,18 +112,36 @@ enum class ConcertinaNote : unsigned {
 };
 
 const std::unordered_multimap<ConcertinaNote, ConcertinaReed> ReedMapping = {
+    { ConcertinaNote::C3, ConcertinaReed::L06Push },
+    { ConcertinaNote::E3, ConcertinaReed::L01Push },
+    { ConcertinaNote::F3, ConcertinaReed::L01Push },
     { ConcertinaNote::G3, ConcertinaReed::L06Pull },
     { ConcertinaNote::G3, ConcertinaReed::L07Push },
+    { ConcertinaNote::A3, ConcertinaReed::L02Push },
+    { ConcertinaNote::A3, ConcertinaReed::L11Pull },
     { ConcertinaNote::B3, ConcertinaReed::L07Pull },
     { ConcertinaNote::B3, ConcertinaReed::L11Push },
+    { ConcertinaNote::Bflat3, ConcertinaReed::L02Pull },
     { ConcertinaNote::C4, ConcertinaReed::L08Push },
+    { ConcertinaNote::Csharp4, ConcertinaReed::L03Push },
     { ConcertinaNote::D4, ConcertinaReed::L08Pull },
     { ConcertinaNote::D4, ConcertinaReed::L12Push },
+    { ConcertinaNote::Dsharp4, ConcertinaReed::L03Pull },
     { ConcertinaNote::E4, ConcertinaReed::L09Push },
     { ConcertinaNote::F4, ConcertinaReed::L09Pull },
+    { ConcertinaNote::Fsharp4, ConcertinaReed::L12Pull },
     { ConcertinaNote::G4, ConcertinaReed::L04Pull },
     { ConcertinaNote::G4, ConcertinaReed::L10Push },
     { ConcertinaNote::G4, ConcertinaReed::L13Push },
+    { ConcertinaNote::Gsharp4, ConcertinaReed::L05Push },
+    { ConcertinaNote::A4, ConcertinaReed::L04Push },
+    { ConcertinaNote::A4, ConcertinaReed::L10Pull },
+    { ConcertinaNote::A4, ConcertinaReed::L13Pull },
+    { ConcertinaNote::Bflat4, ConcertinaReed::L05Pull },
+    { ConcertinaNote::B4, ConcertinaReed::L14Push },
+    { ConcertinaNote::C5, ConcertinaReed::L14Pull },
+    { ConcertinaNote::D5, ConcertinaReed::L15Push },
+    { ConcertinaNote::E5, ConcertinaReed::L15Pull },
 };
 
 const char* GetReedName(ConcertinaReed reed) {
