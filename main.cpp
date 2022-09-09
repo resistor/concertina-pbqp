@@ -48,14 +48,86 @@ auto addNote(PBQPRAGraph& graph, ConcertinaNote note) {
 
 auto addSimultaneousNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
     llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, INFINITY);
-    for (unsigned i = (unsigned)ConcertinaReed::L01Pull; i <= (unsigned)ConcertinaReed::R15Pull; ++i) {
-        for (unsigned j = (unsigned)ConcertinaReed::L01Pull; j <= (unsigned)ConcertinaReed::R15Pull; ++j) {
-            Costs[i][j] = 0;
+    for (auto direction : DIRECTIONS) {
+        for (unsigned i = 1; i <= 15; ++i) {
+            for (unsigned j = 1; j <= 15; ++j) {
+                Costs[LEFT | direction | i][LEFT | direction | j] = 0;
+                Costs[LEFT | direction | i][RIGHT | direction | j] = 0;
+                Costs[RIGHT | direction | i][LEFT | direction | j] = 0;
+                Costs[RIGHT | direction | i][RIGHT | direction | j] = 0;
+            }
         }
     }
-    for (unsigned i = (unsigned)ConcertinaReed::L01Push; i <= (unsigned)ConcertinaReed::R15Push; ++i) {
-        for (unsigned j = (unsigned)ConcertinaReed::L01Push; j <= (unsigned)ConcertinaReed::R15Push; ++j) {
-            Costs[i][j] = 0;
+    return graph.addEdge(n1id, n2id, std::move(Costs));
+}
+
+auto addSequentialNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
+    llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, 0);
+
+    for (unsigned i = 1; i <= 15; ++i) {
+        for (unsigned j = 1; j <= 15; ++j) {
+            // Apply a cost to changing hands.
+            Costs[LEFT | PUSH | i][RIGHT | PUSH | j] += 1;
+            Costs[RIGHT | PUSH | i][LEFT | PUSH | j] += 1;
+
+            Costs[LEFT | PULL | i][RIGHT | PULL | j] += 1;
+            Costs[RIGHT | PULL | i][LEFT | PULL | j] += 1;
+
+            Costs[LEFT | PULL | i][RIGHT | PUSH | j] += 1;
+            Costs[RIGHT | PUSH | i][LEFT | PULL | j] += 1;
+
+            Costs[LEFT | PUSH | i][RIGHT | PULL | j] += 1;
+            Costs[RIGHT | PULL | i][LEFT | PUSH | j] += 1;
+        }
+    }
+
+    // Apply a cost to changing bellows directions and buttons simultaneously.
+    for (unsigned i = 1; i <= 15; ++i) {
+        for (unsigned j = 1; j <= 15; ++j) {
+            if (i != j) {
+                Costs[LEFT | PUSH | i][LEFT | PULL | j] += 1;
+                Costs[LEFT | PULL | i][LEFT | PUSH | j] += 1;
+
+                Costs[RIGHT | PUSH | i][RIGHT | PULL | j] += 1;
+                Costs[RIGHT | PULL | i][RIGHT | PUSH | j] += 1;
+            }
+
+            Costs[LEFT | PUSH | i][RIGHT | PULL | j] += 1;
+            Costs[RIGHT | PULL | i][LEFT | PUSH | j] += 1;
+
+            Costs[RIGHT | PUSH | i][LEFT | PULL | j] += 1;
+            Costs[LEFT | PULL | i][RIGHT | PUSH | j] += 1;
+        }
+    }
+
+    for (auto hand : HANDS) {
+        for (auto direction : DIRECTIONS) {
+            for (unsigned i = 1; i < 6; ++i) {
+                // Apply a cost to sequential notes being assigned to reeds in the same column of
+                // the 3x5 layout.
+                Costs[hand | direction | i][hand | direction | i+5] += 3;
+                Costs[hand | direction | i+5][hand | direction | i] += 3;
+                Costs[hand | direction | i][hand | direction | i+10] += 3;
+                Costs[hand | direction | i+10][hand | direction | i] += 3;
+                Costs[hand | direction | i+5][hand | direction | i+10] += 3;
+                Costs[hand | direction | i+10][hand | direction | i+5] += 3;
+            }
+        }
+    }
+
+    constexpr std::array<unsigned, 3> col4_reeds = { 4, 9, 14 };
+    constexpr std::array<unsigned, 3> col5_reeds = { 5, 10, 15 };
+    for (auto hand : HANDS) {
+        for (auto direction : DIRECTIONS) {
+            for (auto col4 : col4_reeds) {
+                for (auto col5 : col5_reeds) {
+                    // Apply a cost to sequential notes that use the pinky finger.
+                    // This is not subsumed by the intra-column cost because the pinky
+                    // covers two columns.
+                    Costs[hand | direction | col4][hand | direction | col5] += 3;
+                    Costs[hand | direction | col5][hand | direction | col4] += 3;
+                }
+            }
         }
     }
 
@@ -73,6 +145,25 @@ int main() {
         addNote(g, ConcertinaNote::F4),
     };
 
+    std::vector<PBQPRAGraph::NodeId> seq_nodes = {
+        addNote(g, ConcertinaNote::G4),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::B4),
+        addNote(g, ConcertinaNote::E4),
+        addNote(g, ConcertinaNote::B4),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::B4),
+        addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::G4),
+        addNote(g, ConcertinaNote::G4),
+        addNote(g, ConcertinaNote::E4),
+        addNote(g, ConcertinaNote::G4),
+        addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::A4),
+    };
+
     // Add edges to the PBQP graph that represent the fact that all of the notes
     // must be playable simultaneously.
     for (int i = 0; i < nodes.size(); ++i) {
@@ -81,11 +172,24 @@ int main() {
         }
     }
 
+    // Add edges to the PBQP graph that represent the fact that these notes
+    // must be played sequentially.
+    for (int i = 0; i < seq_nodes.size()-1; ++i) {
+        addSequentialNoteEdge(g, seq_nodes[i], seq_nodes[i+1]);
+    }
+
     Solution solution = solve(g);
 
+    printf("Simultaneous notes:\n");
     for (auto node : nodes) {
         ConcertinaReed n1reed = (ConcertinaReed)solution.getSelection(node);
-        printf("Reed assigned: %s\n", GetReedName(n1reed));
+        printf("  Reed assigned: %s\n", GetReedName(n1reed));
+    }
+
+    printf("Sequential notes:\n");
+    for (auto node : seq_nodes) {
+        ConcertinaReed n1reed = (ConcertinaReed)solution.getSelection(node);
+        printf("  Reed assigned: %s\n", GetReedName(n1reed));
     }
 
     return 0;

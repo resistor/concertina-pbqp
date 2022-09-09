@@ -1,70 +1,112 @@
 #pragma once
 
 #include <unordered_map>
+#include <optional>
+
+constexpr unsigned LEFT = 0 << 4;
+constexpr unsigned RIGHT = 1 << 4;
+constexpr std::array<unsigned, 2> HANDS = { LEFT, RIGHT };
+
+constexpr unsigned PUSH = 0 << 5;
+constexpr unsigned PULL = 1 << 5;
+constexpr std::array<unsigned, 2> DIRECTIONS = { PUSH, PULL };
 
 enum class ConcertinaReed : unsigned {
-    L01Push,
-    L02Push,
-    L03Push,
-    L04Push,
-    L05Push,
-    L06Push,
-    L07Push,
-    L08Push,
-    L09Push,
-    L10Push,
-    L11Push,
-    L12Push,
-    L13Push,
-    L14Push,
-    L15Push,
-    R01Push,
-    R02Push,
-    R03Push,
-    R04Push,
-    R05Push,
-    R06Push,
-    R07Push,
-    R08Push,
-    R09Push,
-    R10Push,
-    R11Push,
-    R12Push,
-    R13Push,
-    R14Push,
-    R15Push,
-    L01Pull,
-    L02Pull,
-    L03Pull,
-    L04Pull,
-    L05Pull,
-    L06Pull,
-    L07Pull,
-    L08Pull,
-    L09Pull,
-    L10Pull,
-    L11Pull,
-    L12Pull,
-    L13Pull,
-    L14Pull,
-    L15Pull,
-    R01Pull,
-    R02Pull,
-    R03Pull,
-    R04Pull,
-    R05Pull,
-    R06Pull,
-    R07Pull,
-    R08Pull,
-    R09Pull,
-    R10Pull,
-    R11Pull,
-    R12Pull,
-    R13Pull,
-    R14Pull,
-    R15Pull,
+    L01Push = LEFT | PUSH | 1,
+    L02Push = LEFT | PUSH | 2,
+    L03Push = LEFT | PUSH | 3,
+    L04Push = LEFT | PUSH | 4,
+    L05Push = LEFT | PUSH | 5,
+    L06Push = LEFT | PUSH | 6,
+    L07Push = LEFT | PUSH | 7,
+    L08Push = LEFT | PUSH | 8,
+    L09Push = LEFT | PUSH | 9,
+    L10Push = LEFT | PUSH | 10,
+    L11Push = LEFT | PUSH | 11,
+    L12Push = LEFT | PUSH | 12,
+    L13Push = LEFT | PUSH | 13,
+    L14Push = LEFT | PUSH | 14,
+    L15Push = LEFT | PUSH | 15,
+    R01Push = RIGHT | PUSH | 1,
+    R02Push = RIGHT | PUSH | 2,
+    R03Push = RIGHT | PUSH | 3,
+    R04Push = RIGHT | PUSH | 4,
+    R05Push = RIGHT | PUSH | 5,
+    R06Push = RIGHT | PUSH | 6,
+    R07Push = RIGHT | PUSH | 7,
+    R08Push = RIGHT | PUSH | 8,
+    R09Push = RIGHT | PUSH | 9,
+    R10Push = RIGHT | PUSH | 10,
+    R11Push = RIGHT | PUSH | 11,
+    R12Push = RIGHT | PUSH | 12,
+    R13Push = RIGHT | PUSH | 13,
+    R14Push = RIGHT | PUSH | 14,
+    R15Push = RIGHT | PUSH | 15,
+    L01Pull = LEFT | PULL | 1,
+    L02Pull = LEFT | PULL | 2,
+    L03Pull = LEFT | PULL | 3,
+    L04Pull = LEFT | PULL | 4,
+    L05Pull = LEFT | PULL | 5,
+    L06Pull = LEFT | PULL | 6,
+    L07Pull = LEFT | PULL | 7,
+    L08Pull = LEFT | PULL | 8,
+    L09Pull = LEFT | PULL | 9,
+    L10Pull = LEFT | PULL | 10,
+    L11Pull = LEFT | PULL | 11,
+    L12Pull = LEFT | PULL | 12,
+    L13Pull = LEFT | PULL | 13,
+    L14Pull = LEFT | PULL | 14,
+    L15Pull = LEFT | PULL | 15,
+    R01Pull = RIGHT | PULL | 1,
+    R02Pull = RIGHT | PULL | 2,
+    R03Pull = RIGHT | PULL | 3,
+    R04Pull = RIGHT | PULL | 4,
+    R05Pull = RIGHT | PULL | 5,
+    R06Pull = RIGHT | PULL | 6,
+    R07Pull = RIGHT | PULL | 7,
+    R08Pull = RIGHT | PULL | 8,
+    R09Pull = RIGHT | PULL | 9,
+    R10Pull = RIGHT | PULL | 10,
+    R11Pull = RIGHT | PULL | 11,
+    R12Pull = RIGHT | PULL | 12,
+    R13Pull = RIGHT | PULL | 13,
+    R14Pull = RIGHT | PULL | 14,
+    R15Pull = RIGHT | PULL | 15,
     MaxReed,
 };
+
+std::optional<ConcertinaReed> LeftNeighbor(ConcertinaReed reed) {
+    if ((unsigned)reed % 5 == 1) {
+        return std::nullopt;
+    } else {
+        return (ConcertinaReed)((unsigned)reed - 1);
+    }
+}
+
+std::optional<ConcertinaReed> RightNeighbor(ConcertinaReed reed) {
+    if ((unsigned)reed % 5 == 5) {
+        return std::nullopt;
+    } else {
+        return (ConcertinaReed)((unsigned)reed + 1);
+    }
+}
+
+std::optional<ConcertinaReed> UpNeighbor(ConcertinaReed reed) {
+    if (((unsigned)reed & 0xF) / 5 == 0) {
+        return std::nullopt;
+    } else {
+        return (ConcertinaReed)((unsigned)reed - 5);
+    }
+}
+
+std::optional<ConcertinaReed> DownNeighbor(ConcertinaReed reed) {
+    if (((unsigned)reed & 0xF) / 5 == 2) {
+        return std::nullopt;
+    } else {
+        return (ConcertinaReed)((unsigned)reed + 5);
+    }
+}
+
 
 enum class ConcertinaNote : unsigned {
     C3,
