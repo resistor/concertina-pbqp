@@ -12,66 +12,66 @@ constexpr unsigned PULL = 1 << 5;
 constexpr std::array<unsigned, 2> DIRECTIONS = { PUSH, PULL };
 
 enum class ConcertinaReed : unsigned {
-    L01Push = LEFT | PUSH | 1,
-    L02Push = LEFT | PUSH | 2,
-    L03Push = LEFT | PUSH | 3,
-    L04Push = LEFT | PUSH | 4,
-    L05Push = LEFT | PUSH | 5,
-    L06Push = LEFT | PUSH | 6,
-    L07Push = LEFT | PUSH | 7,
-    L08Push = LEFT | PUSH | 8,
-    L09Push = LEFT | PUSH | 9,
-    L10Push = LEFT | PUSH | 10,
-    L11Push = LEFT | PUSH | 11,
-    L12Push = LEFT | PUSH | 12,
-    L13Push = LEFT | PUSH | 13,
-    L14Push = LEFT | PUSH | 14,
-    L15Push = LEFT | PUSH | 15,
-    R01Push = RIGHT | PUSH | 1,
-    R02Push = RIGHT | PUSH | 2,
-    R03Push = RIGHT | PUSH | 3,
-    R04Push = RIGHT | PUSH | 4,
-    R05Push = RIGHT | PUSH | 5,
-    R06Push = RIGHT | PUSH | 6,
-    R07Push = RIGHT | PUSH | 7,
-    R08Push = RIGHT | PUSH | 8,
-    R09Push = RIGHT | PUSH | 9,
-    R10Push = RIGHT | PUSH | 10,
-    R11Push = RIGHT | PUSH | 11,
-    R12Push = RIGHT | PUSH | 12,
-    R13Push = RIGHT | PUSH | 13,
-    R14Push = RIGHT | PUSH | 14,
-    R15Push = RIGHT | PUSH | 15,
-    L01Pull = LEFT | PULL | 1,
-    L02Pull = LEFT | PULL | 2,
-    L03Pull = LEFT | PULL | 3,
-    L04Pull = LEFT | PULL | 4,
-    L05Pull = LEFT | PULL | 5,
-    L06Pull = LEFT | PULL | 6,
-    L07Pull = LEFT | PULL | 7,
-    L08Pull = LEFT | PULL | 8,
-    L09Pull = LEFT | PULL | 9,
-    L10Pull = LEFT | PULL | 10,
-    L11Pull = LEFT | PULL | 11,
-    L12Pull = LEFT | PULL | 12,
-    L13Pull = LEFT | PULL | 13,
-    L14Pull = LEFT | PULL | 14,
-    L15Pull = LEFT | PULL | 15,
-    R01Pull = RIGHT | PULL | 1,
-    R02Pull = RIGHT | PULL | 2,
-    R03Pull = RIGHT | PULL | 3,
-    R04Pull = RIGHT | PULL | 4,
-    R05Pull = RIGHT | PULL | 5,
-    R06Pull = RIGHT | PULL | 6,
-    R07Pull = RIGHT | PULL | 7,
-    R08Pull = RIGHT | PULL | 8,
-    R09Pull = RIGHT | PULL | 9,
-    R10Pull = RIGHT | PULL | 10,
-    R11Pull = RIGHT | PULL | 11,
-    R12Pull = RIGHT | PULL | 12,
-    R13Pull = RIGHT | PULL | 13,
-    R14Pull = RIGHT | PULL | 14,
-    R15Pull = RIGHT | PULL | 15,
+    L01aPush = LEFT | PUSH | 1,
+    L02aPush = LEFT | PUSH | 2,
+    L03aPush = LEFT | PUSH | 3,
+    L04aPush = LEFT | PUSH | 4,
+    L05aPush = LEFT | PUSH | 5,
+    L01Push = LEFT | PUSH | 6,
+    L02Push = LEFT | PUSH | 7,
+    L03Push = LEFT | PUSH | 8,
+    L04Push = LEFT | PUSH | 9,
+    L05Push = LEFT | PUSH | 10,
+    L06Push = LEFT | PUSH | 11,
+    L07Push = LEFT | PUSH | 12,
+    L08Push = LEFT | PUSH | 13,
+    L09Push = LEFT | PUSH | 14,
+    L10Push = LEFT | PUSH | 15,
+    R01aPush = RIGHT | PUSH | 1,
+    R02aPush = RIGHT | PUSH | 2,
+    R03aPush = RIGHT | PUSH | 3,
+    R04aPush = RIGHT | PUSH | 4,
+    R05aPush = RIGHT | PUSH | 5,
+    R01Push = RIGHT | PUSH | 6,
+    R02Push = RIGHT | PUSH | 7,
+    R03Push = RIGHT | PUSH | 8,
+    R04Push = RIGHT | PUSH | 9,
+    R05Push = RIGHT | PUSH | 10,
+    R06Push = RIGHT | PUSH | 11,
+    R07Push = RIGHT | PUSH | 12,
+    R08Push = RIGHT | PUSH | 13,
+    R09Push = RIGHT | PUSH | 14,
+    R10Push = RIGHT | PUSH | 15,
+    L01aPull = LEFT | PULL | 1,
+    L02aPull = LEFT | PULL | 2,
+    L03aPull = LEFT | PULL | 3,
+    L04aPull = LEFT | PULL | 4,
+    L05aPull = LEFT | PULL | 5,
+    L01Pull = LEFT | PULL | 6,
+    L02Pull = LEFT | PULL | 7,
+    L03Pull = LEFT | PULL | 8,
+    L04Pull = LEFT | PULL | 9,
+    L05Pull = LEFT | PULL | 10,
+    L06Pull = LEFT | PULL | 11,
+    L07Pull = LEFT | PULL | 12,
+    L08Pull = LEFT | PULL | 13,
+    L09Pull = LEFT | PULL | 14,
+    L10Pull = LEFT | PULL | 15,
+    R01aPull = RIGHT | PULL | 1,
+    R02aPull = RIGHT | PULL | 2,
+    R03aPull = RIGHT | PULL | 3,
+    R04aPull = RIGHT | PULL | 4,
+    R05aPull = RIGHT | PULL | 5,
+    R01Pull = RIGHT | PULL | 6,
+    R02Pull = RIGHT | PULL | 7,
+    R03Pull = RIGHT | PULL | 8,
+    R04Pull = RIGHT | PULL | 9,
+    R05Pull = RIGHT | PULL | 10,
+    R06Pull = RIGHT | PULL | 11,
+    R07Pull = RIGHT | PULL | 12,
+    R08Pull = RIGHT | PULL | 13,
+    R09Pull = RIGHT | PULL | 14,
+    R10Pull = RIGHT | PULL | 15,
     MaxReed,
 };
 
@@ -154,70 +154,80 @@ enum class ConcertinaNote : unsigned {
 };
 
 const std::unordered_multimap<ConcertinaNote, ConcertinaReed> ReedMapping = {
-    { ConcertinaNote::E3, ConcertinaReed::L01Push },
-    { ConcertinaNote::F3, ConcertinaReed::L01Pull },
-    { ConcertinaNote::A3, ConcertinaReed::L02Push },
-    { ConcertinaNote::Bflat3, ConcertinaReed::L02Pull },
-    { ConcertinaNote::Csharp4, ConcertinaReed::L03Push },
-    { ConcertinaNote::Dsharp4, ConcertinaReed::L03Pull },
-    { ConcertinaNote::A4, ConcertinaReed::L04Push },
-    { ConcertinaNote::G4, ConcertinaReed::L04Pull },
-    { ConcertinaNote::Gsharp4, ConcertinaReed::L05Push },
-    { ConcertinaNote::Bflat4, ConcertinaReed::L05Pull },
-    { ConcertinaNote::C3, ConcertinaReed::L06Push },
-    { ConcertinaNote::G3, ConcertinaReed::L06Pull },
-    { ConcertinaNote::G3, ConcertinaReed::L07Push },
-    { ConcertinaNote::B3, ConcertinaReed::L07Pull },
-    { ConcertinaNote::C4, ConcertinaReed::L08Push },
-    { ConcertinaNote::D4, ConcertinaReed::L08Pull },
-    { ConcertinaNote::E4, ConcertinaReed::L09Push },
-    { ConcertinaNote::F4, ConcertinaReed::L09Pull },
-    { ConcertinaNote::G4, ConcertinaReed::L10Push },
-    { ConcertinaNote::A4, ConcertinaReed::L10Pull },
-    { ConcertinaNote::B3, ConcertinaReed::L11Push },
-    { ConcertinaNote::A3, ConcertinaReed::L11Pull },
-    { ConcertinaNote::D4, ConcertinaReed::L12Push },
-    { ConcertinaNote::Fsharp4, ConcertinaReed::L12Pull },
-    { ConcertinaNote::G4, ConcertinaReed::L13Push },
-    { ConcertinaNote::A4, ConcertinaReed::L13Pull },
-    { ConcertinaNote::B4, ConcertinaReed::L14Push },
-    { ConcertinaNote::C5, ConcertinaReed::L14Pull },
-    { ConcertinaNote::D5, ConcertinaReed::L15Push },
-    { ConcertinaNote::E5, ConcertinaReed::L15Pull },
-    { ConcertinaNote::Csharp5, ConcertinaReed::R01Push },
-    { ConcertinaNote::Dsharp5, ConcertinaReed::R01Pull },
-    { ConcertinaNote::A5, ConcertinaReed::R02Push },
-    { ConcertinaNote::G5, ConcertinaReed::R02Pull },
-    { ConcertinaNote::Gsharp5, ConcertinaReed::R03Push },
-    { ConcertinaNote::Bflat5, ConcertinaReed::R03Pull},
-    { ConcertinaNote::Csharp6, ConcertinaReed::R04Push },
-    { ConcertinaNote::Dsharp6, ConcertinaReed::R04Pull },
-    { ConcertinaNote::A6, ConcertinaReed::R05Push },
-    { ConcertinaNote::F6, ConcertinaReed::R05Pull },
-    { ConcertinaNote::C5, ConcertinaReed::R06Push },
-    { ConcertinaNote::B4, ConcertinaReed::R06Pull },
-    { ConcertinaNote::E5, ConcertinaReed::R07Push },
-    { ConcertinaNote::D5, ConcertinaReed::R07Pull },
-    { ConcertinaNote::G5, ConcertinaReed::R08Push },
-    { ConcertinaNote::F5, ConcertinaReed::R08Pull },
-    { ConcertinaNote::C6, ConcertinaReed::R09Push },
-    { ConcertinaNote::A5, ConcertinaReed::R09Pull },
-    { ConcertinaNote::E6, ConcertinaReed::R10Push },
-    { ConcertinaNote::B5, ConcertinaReed::R10Pull },
-    { ConcertinaNote::G5, ConcertinaReed::R11Push },
-    { ConcertinaNote::Fsharp5, ConcertinaReed::R11Pull },
-    { ConcertinaNote::B5, ConcertinaReed::R12Push },
-    { ConcertinaNote::A5, ConcertinaReed::R12Pull },
-    { ConcertinaNote::D6, ConcertinaReed::R13Push },
-    { ConcertinaNote::C6, ConcertinaReed::R13Pull },
-    { ConcertinaNote::G6, ConcertinaReed::R14Push },
-    { ConcertinaNote::E6, ConcertinaReed::R14Pull },
-    { ConcertinaNote::B6, ConcertinaReed::R15Push },
-    { ConcertinaNote::Fsharp6, ConcertinaReed::R15Pull },
+    { ConcertinaNote::E3, ConcertinaReed::L01aPush },
+    { ConcertinaNote::F3, ConcertinaReed::L01aPull },
+    { ConcertinaNote::A3, ConcertinaReed::L02aPush },
+    { ConcertinaNote::Bflat3, ConcertinaReed::L02aPull },
+    { ConcertinaNote::Csharp4, ConcertinaReed::L03aPush },
+    { ConcertinaNote::Dsharp4, ConcertinaReed::L03aPull },
+    { ConcertinaNote::A4, ConcertinaReed::L04aPush },
+    { ConcertinaNote::G4, ConcertinaReed::L04aPull },
+    { ConcertinaNote::Gsharp4, ConcertinaReed::L05aPush },
+    { ConcertinaNote::Bflat4, ConcertinaReed::L05aPull },
+    { ConcertinaNote::C3, ConcertinaReed::L01Push },
+    { ConcertinaNote::G3, ConcertinaReed::L01Pull },
+    { ConcertinaNote::G3, ConcertinaReed::L02Push },
+    { ConcertinaNote::B3, ConcertinaReed::L02Pull },
+    { ConcertinaNote::C4, ConcertinaReed::L03Push },
+    { ConcertinaNote::D4, ConcertinaReed::L03Pull },
+    { ConcertinaNote::E4, ConcertinaReed::L04Push },
+    { ConcertinaNote::F4, ConcertinaReed::L04Pull },
+    { ConcertinaNote::G4, ConcertinaReed::L05Push },
+    { ConcertinaNote::A4, ConcertinaReed::L05Pull },
+    { ConcertinaNote::B3, ConcertinaReed::L06Push },
+    { ConcertinaNote::A3, ConcertinaReed::L06Pull },
+    { ConcertinaNote::D4, ConcertinaReed::L07Push },
+    { ConcertinaNote::Fsharp4, ConcertinaReed::L07Pull },
+    { ConcertinaNote::G4, ConcertinaReed::L08Push },
+    { ConcertinaNote::A4, ConcertinaReed::L08Pull },
+    { ConcertinaNote::B4, ConcertinaReed::L09Push },
+    { ConcertinaNote::C5, ConcertinaReed::L09Pull },
+    { ConcertinaNote::D5, ConcertinaReed::L10Push },
+    { ConcertinaNote::E5, ConcertinaReed::L10Pull },
+    { ConcertinaNote::Csharp5, ConcertinaReed::R01aPush },
+    { ConcertinaNote::Dsharp5, ConcertinaReed::R01aPull },
+    { ConcertinaNote::A5, ConcertinaReed::R02aPush },
+    { ConcertinaNote::G5, ConcertinaReed::R02aPull },
+    { ConcertinaNote::Gsharp5, ConcertinaReed::R03aPush },
+    { ConcertinaNote::Bflat5, ConcertinaReed::R03aPull},
+    { ConcertinaNote::Csharp6, ConcertinaReed::R04aPush },
+    { ConcertinaNote::Dsharp6, ConcertinaReed::R04aPull },
+    { ConcertinaNote::A6, ConcertinaReed::R05aPush },
+    { ConcertinaNote::F6, ConcertinaReed::R05aPull },
+    { ConcertinaNote::C5, ConcertinaReed::R01Push },
+    { ConcertinaNote::B4, ConcertinaReed::R01Pull },
+    { ConcertinaNote::E5, ConcertinaReed::R02Push },
+    { ConcertinaNote::D5, ConcertinaReed::R02Pull },
+    { ConcertinaNote::G5, ConcertinaReed::R03Push },
+    { ConcertinaNote::F5, ConcertinaReed::R03Pull },
+    { ConcertinaNote::C6, ConcertinaReed::R04Push },
+    { ConcertinaNote::A5, ConcertinaReed::R04Pull },
+    { ConcertinaNote::E6, ConcertinaReed::R05Push },
+    { ConcertinaNote::B5, ConcertinaReed::R05Pull },
+    { ConcertinaNote::G5, ConcertinaReed::R06Push },
+    { ConcertinaNote::Fsharp5, ConcertinaReed::R06Pull },
+    { ConcertinaNote::B5, ConcertinaReed::R07Push },
+    { ConcertinaNote::A5, ConcertinaReed::R07Pull },
+    { ConcertinaNote::D6, ConcertinaReed::R08Push },
+    { ConcertinaNote::C6, ConcertinaReed::R08Pull },
+    { ConcertinaNote::G6, ConcertinaReed::R09Push },
+    { ConcertinaNote::E6, ConcertinaReed::R09Pull },
+    { ConcertinaNote::B6, ConcertinaReed::R10Push },
+    { ConcertinaNote::Fsharp6, ConcertinaReed::R10Pull },
 };
 
 const char* GetReedName(ConcertinaReed reed) {
     switch (reed) {
+        case ConcertinaReed::L01aPull:
+            return "L01aPull";
+        case ConcertinaReed::L02aPull:
+            return "L02aPull";
+        case ConcertinaReed::L03aPull:
+            return "L03aPull";
+        case ConcertinaReed::L04aPull:
+            return "L04aPull";
+        case ConcertinaReed::L05aPull:
+            return "L05aPull";
         case ConcertinaReed::L01Pull:
             return "L01Pull";
         case ConcertinaReed::L02Pull:
@@ -238,16 +248,16 @@ const char* GetReedName(ConcertinaReed reed) {
             return "L09Pull";
         case ConcertinaReed::L10Pull:
             return "L10Pull";
-        case ConcertinaReed::L11Pull:
-            return "L11Pull";
-        case ConcertinaReed::L12Pull:
-            return "L12Pull";
-        case ConcertinaReed::L13Pull:
-            return "L13Pull";
-        case ConcertinaReed::L14Pull:
-            return "L14Pull";
-        case ConcertinaReed::L15Pull:
-            return "L15Pull";
+        case ConcertinaReed::L01aPush:
+            return "L01aPush";
+        case ConcertinaReed::L02aPush:
+            return "L02aPush";
+        case ConcertinaReed::L03aPush:
+            return "L03aPush";
+        case ConcertinaReed::L04aPush:
+            return "L04aPush";
+        case ConcertinaReed::L05aPush:
+            return "L05aPush";
         case ConcertinaReed::L01Push:
             return "L01Push";
         case ConcertinaReed::L02Push:
@@ -268,16 +278,16 @@ const char* GetReedName(ConcertinaReed reed) {
             return "L09Push";
         case ConcertinaReed::L10Push:
             return "L10Push";
-        case ConcertinaReed::L11Push:
-            return "L11Push";
-        case ConcertinaReed::L12Push:
-            return "L12Push";
-        case ConcertinaReed::L13Push:
-            return "L13Push";
-        case ConcertinaReed::L14Push:
-            return "L14Push";
-        case ConcertinaReed::L15Push:
-            return "L15Push";
+        case ConcertinaReed::R01aPull:
+            return "R01aPull";
+        case ConcertinaReed::R02aPull:
+            return "R02aPull";
+        case ConcertinaReed::R03aPull:
+            return "R03aPull";
+        case ConcertinaReed::R04aPull:
+            return "R04aPull";
+        case ConcertinaReed::R05aPull:
+            return "R05aPull";
         case ConcertinaReed::R01Pull:
             return "R01Pull";
         case ConcertinaReed::R02Pull:
@@ -298,16 +308,16 @@ const char* GetReedName(ConcertinaReed reed) {
             return "R09Pull";
         case ConcertinaReed::R10Pull:
             return "R10Pull";
-        case ConcertinaReed::R11Pull:
-            return "R11Pull";
-        case ConcertinaReed::R12Pull:
-            return "R12Pull";
-        case ConcertinaReed::R13Pull:
-            return "R13Pull";
-        case ConcertinaReed::R14Pull:
-            return "R14Pull";
-        case ConcertinaReed::R15Pull:
-            return "R15Pull";
+        case ConcertinaReed::R01aPush:
+            return "R01aPush";
+        case ConcertinaReed::R02aPush:
+            return "R02aPush";
+        case ConcertinaReed::R03aPush:
+            return "R03aPush";
+        case ConcertinaReed::R04aPush:
+            return "R04aPush";
+        case ConcertinaReed::R05aPush:
+            return "R05aPush";
         case ConcertinaReed::R01Push:
             return "R01Push";
         case ConcertinaReed::R02Push:
@@ -328,16 +338,6 @@ const char* GetReedName(ConcertinaReed reed) {
             return "R09Push";
         case ConcertinaReed::R10Push:
             return "R10Push";
-        case ConcertinaReed::R11Push:
-            return "R11Push";
-        case ConcertinaReed::R12Push:
-            return "R12Push";
-        case ConcertinaReed::R13Push:
-            return "R13Push";
-        case ConcertinaReed::R14Push:
-            return "R14Push";
-        case ConcertinaReed::R15Push:
-            return "R15Push";
         default:
             printf("UNIMPLEMENTED REED PRINTING %d\n", (unsigned)reed);
             exit(1);

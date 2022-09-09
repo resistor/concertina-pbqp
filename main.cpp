@@ -16,6 +16,10 @@ auto addNote(PBQPRAGraph& graph, ConcertinaNote note) {
     }
 
     // Left-hand pinky reeds get a penalty.
+    Costs[(unsigned)ConcertinaReed::L01aPull] += 1;
+    Costs[(unsigned)ConcertinaReed::L01aPush] += 1;
+    Costs[(unsigned)ConcertinaReed::L02aPull] += 1;
+    Costs[(unsigned)ConcertinaReed::L02aPush] += 1;
     Costs[(unsigned)ConcertinaReed::L01Pull] += 1;
     Costs[(unsigned)ConcertinaReed::L01Push] += 1;
     Costs[(unsigned)ConcertinaReed::L02Pull] += 1;
@@ -24,12 +28,12 @@ auto addNote(PBQPRAGraph& graph, ConcertinaNote note) {
     Costs[(unsigned)ConcertinaReed::L06Push] += 1;
     Costs[(unsigned)ConcertinaReed::L07Pull] += 1;
     Costs[(unsigned)ConcertinaReed::L07Push] += 1;
-    Costs[(unsigned)ConcertinaReed::L11Pull] += 1;
-    Costs[(unsigned)ConcertinaReed::L11Push] += 1;
-    Costs[(unsigned)ConcertinaReed::L12Pull] += 1;
-    Costs[(unsigned)ConcertinaReed::L12Push] += 1;
 
     // Right-hand pinky reeds get a penalty.
+    Costs[(unsigned)ConcertinaReed::R04aPull] += 1;
+    Costs[(unsigned)ConcertinaReed::R04aPush] += 1;
+    Costs[(unsigned)ConcertinaReed::R05aPull] += 1;
+    Costs[(unsigned)ConcertinaReed::R05aPush] += 1;
     Costs[(unsigned)ConcertinaReed::R04Pull] += 1;
     Costs[(unsigned)ConcertinaReed::R04Push] += 1;
     Costs[(unsigned)ConcertinaReed::R05Pull] += 1;
@@ -38,10 +42,6 @@ auto addNote(PBQPRAGraph& graph, ConcertinaNote note) {
     Costs[(unsigned)ConcertinaReed::R09Push] += 1;
     Costs[(unsigned)ConcertinaReed::R10Pull] += 1;
     Costs[(unsigned)ConcertinaReed::R10Push] += 1;
-    Costs[(unsigned)ConcertinaReed::R14Pull] += 1;
-    Costs[(unsigned)ConcertinaReed::R14Push] += 1;
-    Costs[(unsigned)ConcertinaReed::R15Pull] += 1;
-    Costs[(unsigned)ConcertinaReed::R15Push] += 1;
 
     return graph.addNode(std::move(Costs));
 }
@@ -174,22 +174,33 @@ int main() {
     };
 
     std::vector<PBQPRAGraph::NodeId> seq_nodes = {
-        addNote(g, ConcertinaNote::G4),
-        addNote(g, ConcertinaNote::C5),
-        addNote(g, ConcertinaNote::D5),
-        addNote(g, ConcertinaNote::C5),
         addNote(g, ConcertinaNote::B4),
+        addNote(g, ConcertinaNote::G4),
+        addNote(g, ConcertinaNote::D4),
         addNote(g, ConcertinaNote::E4),
         addNote(g, ConcertinaNote::B4),
-        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::B4),
+        addNote(g, ConcertinaNote::G4),
+        addNote(g, ConcertinaNote::D4),
+        addNote(g, ConcertinaNote::E4),
+        addNote(g, ConcertinaNote::D4),
+        addNote(g, ConcertinaNote::C4),
+        addNote(g, ConcertinaNote::B3),
+        addNote(g, ConcertinaNote::D4),
+        addNote(g, ConcertinaNote::G4),
+        addNote(g, ConcertinaNote::A4),
         addNote(g, ConcertinaNote::B4),
         addNote(g, ConcertinaNote::A4),
         addNote(g, ConcertinaNote::G4),
-        addNote(g, ConcertinaNote::G4),
-        addNote(g, ConcertinaNote::E4),
-        addNote(g, ConcertinaNote::G4),
         addNote(g, ConcertinaNote::A4),
         addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::B4),
+        addNote(g, ConcertinaNote::A4),
+        addNote(g, ConcertinaNote::B4),
     };
 
     // Add edges to the PBQP graph that represent the fact that all of the notes
