@@ -51,22 +51,31 @@ auto addSimultaneousNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPR
     for (auto direction : DIRECTIONS) {
         for (unsigned i = 1; i <= 15; ++i) {
             for (unsigned j = 1; j <= 15; ++j) {
-                Costs[LEFT | direction | i][LEFT | direction | j] = 0;
-                Costs[LEFT | direction | i][RIGHT | direction | j] = 0;
-                Costs[RIGHT | direction | i][LEFT | direction | j] = 0;
-                Costs[RIGHT | direction | i][RIGHT | direction | j] = 0;
+                if (i % 5 == j % 5) {
+                    // Apply a cost to playing multiple reeds in the same column simultaneously.
+                    Costs[LEFT | direction | i][LEFT | direction | j] = 3;
+                    Costs[LEFT | direction | i][RIGHT | direction | j] = 3;
+                    Costs[RIGHT | direction | i][LEFT | direction | j] = 3;
+                    Costs[RIGHT | direction | i][RIGHT | direction | j] = 3;
+                } else {
+                    Costs[LEFT | direction | i][LEFT | direction | j] = 0;
+                    Costs[LEFT | direction | i][RIGHT | direction | j] = 0;
+                    Costs[RIGHT | direction | i][LEFT | direction | j] = 0;
+                    Costs[RIGHT | direction | i][RIGHT | direction | j] = 0;
+                }
             }
         }
     }
+
     return graph.addEdge(n1id, n2id, std::move(Costs));
 }
 
 auto addSequentialNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
     llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, 0);
 
+    // Apply a cost to changing hands.
     for (unsigned i = 1; i <= 15; ++i) {
         for (unsigned j = 1; j <= 15; ++j) {
-            // Apply a cost to changing hands.
             Costs[LEFT | PUSH | i][RIGHT | PUSH | j] += 1;
             Costs[RIGHT | PUSH | i][LEFT | PUSH | j] += 1;
 
@@ -100,11 +109,30 @@ auto addSequentialNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAG
         }
     }
 
+    // Apply a cost to going directly from the upper to the lower row.
+    for (auto hand : HANDS) {
+        for (unsigned i = 1; i < 6; ++i) {
+            for (unsigned j = 10; j < 16; ++j) {
+                Costs[hand | PUSH | i][hand | PUSH | j] += 1;
+                Costs[hand | PUSH | j][hand | PUSH | i] += 1;
+
+                Costs[hand | PULL | i][hand | PULL | j] += 1;
+                Costs[hand | PULL | j][hand | PULL | i] += 1;
+
+                Costs[hand | PUSH | i][hand | PULL | j] += 1;
+                Costs[hand | PULL | j][hand | PUSH | i] += 1;
+
+                Costs[hand | PULL | i][hand | PUSH | j] += 1;
+                Costs[hand | PUSH | j][hand | PULL | i] += 1;
+            }
+        }
+    }
+
+    // Apply a cost to sequential notes being assigned to reeds in the same column of
+    // the 3x5 layout.
     for (auto hand : HANDS) {
         for (auto direction : DIRECTIONS) {
             for (unsigned i = 1; i < 6; ++i) {
-                // Apply a cost to sequential notes being assigned to reeds in the same column of
-                // the 3x5 layout.
                 Costs[hand | direction | i][hand | direction | i+5] += 3;
                 Costs[hand | direction | i+5][hand | direction | i] += 3;
                 Costs[hand | direction | i][hand | direction | i+10] += 3;
@@ -115,15 +143,15 @@ auto addSequentialNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAG
         }
     }
 
+    // Apply a cost to sequential notes that use the pinky finger.
+    // This is not subsumed by the intra-column cost because the pinky
+    // covers two columns.
     constexpr std::array<unsigned, 3> col4_reeds = { 4, 9, 14 };
     constexpr std::array<unsigned, 3> col5_reeds = { 5, 10, 15 };
     for (auto hand : HANDS) {
         for (auto direction : DIRECTIONS) {
             for (auto col4 : col4_reeds) {
                 for (auto col5 : col5_reeds) {
-                    // Apply a cost to sequential notes that use the pinky finger.
-                    // This is not subsumed by the intra-column cost because the pinky
-                    // covers two columns.
                     Costs[hand | direction | col4][hand | direction | col5] += 3;
                     Costs[hand | direction | col5][hand | direction | col4] += 3;
                 }
