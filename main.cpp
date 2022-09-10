@@ -46,33 +46,36 @@ auto addNote(PBQPRAGraph& graph, ConcertinaNote note) {
     return graph.addNode(std::move(Costs));
 }
 
-auto addSimultaneousNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
-    llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, INFINITY);
-    for (auto direction : DIRECTIONS) {
-        for (unsigned i = 1; i <= 15; ++i) {
-            for (unsigned j = 1; j <= 15; ++j) {
-                if (i % 5 == j % 5) {
-                    // Apply a cost to playing multiple reeds in the same column simultaneously.
-                    Costs[LEFT | direction | i][LEFT | direction | j] = 3;
-                    Costs[LEFT | direction | i][RIGHT | direction | j] = 3;
-                    Costs[RIGHT | direction | i][LEFT | direction | j] = 3;
-                    Costs[RIGHT | direction | i][RIGHT | direction | j] = 3;
-                } else {
-                    Costs[LEFT | direction | i][LEFT | direction | j] = 0;
-                    Costs[LEFT | direction | i][RIGHT | direction | j] = 0;
-                    Costs[RIGHT | direction | i][LEFT | direction | j] = 0;
-                    Costs[RIGHT | direction | i][RIGHT | direction | j] = 0;
+void setupSimultaneousNoteCosts(llvm::PBQP::Matrix& Costs) {
+    for (auto hand_i : HANDS) {
+        for (auto hand_j : HANDS) {
+            for (unsigned i = 1; i <= 15; ++i) {
+                for (unsigned j = 1; j <= 15; ++j) {
+                    if (i % 5 == j % 5) {
+                        // Apply a cost to playing multiple reeds in the same column simultaneously.
+                        Costs[hand_i | PUSH | i][hand_j | PUSH | j] += 3;
+                        Costs[hand_j | PUSH | j][hand_i | PUSH | i] += 3;
+                        Costs[hand_i | PULL | i][hand_j | PULL | j] += 3;
+                        Costs[hand_j | PULL | j][hand_i | PULL | i] += 3;
+                    }
+
+                    Costs[hand_i | PUSH | i][hand_j | PULL | j] = INFINITY;
+                    Costs[hand_j | PULL | j][hand_i | PUSH | i] = INFINITY;
+                    Costs[hand_i | PULL | i][hand_j | PUSH | j] = INFINITY;
+                    Costs[hand_j | PUSH | j][hand_i | PULL | i] = INFINITY;
                 }
             }
         }
     }
+}
 
+auto addSimultaneousNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
+    llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, 0);
+    setupSimultaneousNoteCosts(Costs);
     return graph.addEdge(n1id, n2id, std::move(Costs));
 }
 
-auto addSequentialNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
-    llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, 0);
-
+void setupSequentialNoteCosts(llvm::PBQP::Matrix& Costs) {
     // Apply a cost to changing hands.
     for (unsigned i = 1; i <= 15; ++i) {
         for (unsigned j = 1; j <= 15; ++j) {
@@ -158,7 +161,18 @@ auto addSequentialNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAG
             }
         }
     }
+}
 
+auto addSequentialNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
+    llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, 0);
+    setupSequentialNoteCosts(Costs);
+    return graph.addEdge(n1id, n2id, std::move(Costs));
+}
+
+auto addSequentialAndSimultaneousNoteEdge(PBQPRAGraph& graph, PBQPRAGraph::NodeId n1id, PBQPRAGraph::NodeId n2id) {
+    llvm::PBQP::Matrix Costs((unsigned)ConcertinaReed::MaxReed, (unsigned)ConcertinaReed::MaxReed, 0);
+    setupSequentialNoteCosts(Costs);
+    setupSimultaneousNoteCosts(Costs);
     return graph.addEdge(n1id, n2id, std::move(Costs));
 }
 
@@ -174,33 +188,66 @@ int main() {
     };
 
     std::vector<PBQPRAGraph::NodeId> seq_nodes = {
-        addNote(g, ConcertinaNote::B4),
-        addNote(g, ConcertinaNote::G4),
-        addNote(g, ConcertinaNote::D4),
-        addNote(g, ConcertinaNote::E4),
-        addNote(g, ConcertinaNote::B4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::B4),
-        addNote(g, ConcertinaNote::G4),
-        addNote(g, ConcertinaNote::D4),
-        addNote(g, ConcertinaNote::E4),
-        addNote(g, ConcertinaNote::D4),
-        addNote(g, ConcertinaNote::C4),
-        addNote(g, ConcertinaNote::B3),
-        addNote(g, ConcertinaNote::D4),
-        addNote(g, ConcertinaNote::G4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::B4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::G4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::B4),
-        addNote(g, ConcertinaNote::A4),
-        addNote(g, ConcertinaNote::B4),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::A5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::A5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::C5),
+
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::F5),
+        addNote(g, ConcertinaNote::F5),
+        addNote(g, ConcertinaNote::A5),
+        addNote(g, ConcertinaNote::A5),
+        addNote(g, ConcertinaNote::A5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::A5),
+        addNote(g, ConcertinaNote::G5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::C5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::E5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::D5),
+        addNote(g, ConcertinaNote::C5),
     };
 
     // Add edges to the PBQP graph that represent the fact that all of the notes
@@ -217,6 +264,13 @@ int main() {
         addSequentialNoteEdge(g, seq_nodes[i], seq_nodes[i+1]);
     }
 
+    PBQPRAGraph::NodeId id2 = addNote(g, ConcertinaNote::E5);
+    PBQPRAGraph::NodeId id9 = addNote(g, ConcertinaNote::B4);
+    PBQPRAGraph::NodeId id4 = addNote(g, ConcertinaNote::E4);
+    addSequentialAndSimultaneousNoteEdge(g, id2, id9);
+    addSequentialNoteEdge(g, id9, id4);
+    addSimultaneousNoteEdge(g, id2, id4);
+
     Solution solution = solve(g);
 
     printf("Simultaneous notes:\n");
@@ -230,6 +284,11 @@ int main() {
         ConcertinaReed n1reed = (ConcertinaReed)solution.getSelection(node);
         printf("  Reed assigned: %s\n", GetReedName(n1reed));
     }
+
+    printf("Mixed notes:\n");
+    printf("  Reed assigned: %s\n", GetReedName((ConcertinaReed)solution.getSelection(id2)));
+    printf("  Reed assigned: %s\n", GetReedName((ConcertinaReed)solution.getSelection(id9)));
+    printf("  Reed assigned: %s\n", GetReedName((ConcertinaReed)solution.getSelection(id4)));
 
     return 0;
 }
