@@ -10,7 +10,7 @@ auto addNote(PBQPRAGraph& graph, ConcertinaNote note) {
     PBQPRAGraph::RawVector Costs((unsigned int)ConcertinaReed::MaxReed, INFINITY);
 
     // Set all allowed note->reed mappings to have zero cost.
-    auto reed_range = ReedMapping.equal_range(note);
+    auto reed_range = CGWheatstoneReedMapping.equal_range(note);
     for (auto it = reed_range.first; it != reed_range.second; ++it) {
         Costs[(unsigned)it->second] = 0;
     }
