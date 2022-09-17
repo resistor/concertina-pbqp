@@ -5,78 +5,82 @@
 
 constexpr unsigned LEFT = 0 << 4;
 constexpr unsigned RIGHT = 1 << 4;
+constexpr unsigned HAND_MASK = 1 << 4;
 constexpr std::array<unsigned, 2> HANDS = { LEFT, RIGHT };
 
 constexpr unsigned PUSH = 0 << 5;
 constexpr unsigned PULL = 1 << 5;
+constexpr unsigned DIRECTION_MASK = 1 << 5;
 constexpr std::array<unsigned, 2> DIRECTIONS = { PUSH, PULL };
 
+constexpr unsigned FINGER_MASK = 0xF;
+
 enum class ConcertinaReed : unsigned {
-    L01aPush = LEFT | PUSH | 1,
-    L02aPush = LEFT | PUSH | 2,
-    L03aPush = LEFT | PUSH | 3,
-    L04aPush = LEFT | PUSH | 4,
-    L05aPush = LEFT | PUSH | 5,
-    L01Push = LEFT | PUSH | 6,
-    L02Push = LEFT | PUSH | 7,
-    L03Push = LEFT | PUSH | 8,
-    L04Push = LEFT | PUSH | 9,
-    L05Push = LEFT | PUSH | 10,
-    L06Push = LEFT | PUSH | 11,
-    L07Push = LEFT | PUSH | 12,
-    L08Push = LEFT | PUSH | 13,
-    L09Push = LEFT | PUSH | 14,
-    L10Push = LEFT | PUSH | 15,
-    R01aPush = RIGHT | PUSH | 1,
-    R02aPush = RIGHT | PUSH | 2,
-    R03aPush = RIGHT | PUSH | 3,
-    R04aPush = RIGHT | PUSH | 4,
-    R05aPush = RIGHT | PUSH | 5,
-    R01Push = RIGHT | PUSH | 6,
-    R02Push = RIGHT | PUSH | 7,
-    R03Push = RIGHT | PUSH | 8,
-    R04Push = RIGHT | PUSH | 9,
-    R05Push = RIGHT | PUSH | 10,
-    R06Push = RIGHT | PUSH | 11,
-    R07Push = RIGHT | PUSH | 12,
-    R08Push = RIGHT | PUSH | 13,
-    R09Push = RIGHT | PUSH | 14,
-    R10Push = RIGHT | PUSH | 15,
-    L01aPull = LEFT | PULL | 1,
-    L02aPull = LEFT | PULL | 2,
-    L03aPull = LEFT | PULL | 3,
-    L04aPull = LEFT | PULL | 4,
-    L05aPull = LEFT | PULL | 5,
-    L01Pull = LEFT | PULL | 6,
-    L02Pull = LEFT | PULL | 7,
-    L03Pull = LEFT | PULL | 8,
-    L04Pull = LEFT | PULL | 9,
-    L05Pull = LEFT | PULL | 10,
-    L06Pull = LEFT | PULL | 11,
-    L07Pull = LEFT | PULL | 12,
-    L08Pull = LEFT | PULL | 13,
-    L09Pull = LEFT | PULL | 14,
-    L10Pull = LEFT | PULL | 15,
-    R01aPull = RIGHT | PULL | 1,
-    R02aPull = RIGHT | PULL | 2,
-    R03aPull = RIGHT | PULL | 3,
-    R04aPull = RIGHT | PULL | 4,
-    R05aPull = RIGHT | PULL | 5,
-    R01Pull = RIGHT | PULL | 6,
-    R02Pull = RIGHT | PULL | 7,
-    R03Pull = RIGHT | PULL | 8,
-    R04Pull = RIGHT | PULL | 9,
-    R05Pull = RIGHT | PULL | 10,
-    R06Pull = RIGHT | PULL | 11,
-    R07Pull = RIGHT | PULL | 12,
-    R08Pull = RIGHT | PULL | 13,
-    R09Pull = RIGHT | PULL | 14,
-    R10Pull = RIGHT | PULL | 15,
+    L01aPush = LEFT | PUSH | 0,
+    L02aPush = LEFT | PUSH | 1,
+    L03aPush = LEFT | PUSH | 2,
+    L04aPush = LEFT | PUSH | 3,
+    L05aPush = LEFT | PUSH | 4,
+    L01Push = LEFT | PUSH | 5,
+    L02Push = LEFT | PUSH | 6,
+    L03Push = LEFT | PUSH | 7,
+    L04Push = LEFT | PUSH | 8,
+    L05Push = LEFT | PUSH | 9,
+    L06Push = LEFT | PUSH | 10,
+    L07Push = LEFT | PUSH | 11,
+    L08Push = LEFT | PUSH | 12,
+    L09Push = LEFT | PUSH | 13,
+    L10Push = LEFT | PUSH | 14,
+    R01aPush = RIGHT | PUSH | 0,
+    R02aPush = RIGHT | PUSH | 1,
+    R03aPush = RIGHT | PUSH | 2,
+    R04aPush = RIGHT | PUSH | 3,
+    R05aPush = RIGHT | PUSH | 4,
+    R01Push = RIGHT | PUSH | 5,
+    R02Push = RIGHT | PUSH | 6,
+    R03Push = RIGHT | PUSH | 7,
+    R04Push = RIGHT | PUSH | 8,
+    R05Push = RIGHT | PUSH | 9,
+    R06Push = RIGHT | PUSH | 10,
+    R07Push = RIGHT | PUSH | 11,
+    R08Push = RIGHT | PUSH | 12,
+    R09Push = RIGHT | PUSH | 13,
+    R10Push = RIGHT | PUSH | 14,
+    L01aPull = LEFT | PULL | 0,
+    L02aPull = LEFT | PULL | 1,
+    L03aPull = LEFT | PULL | 2,
+    L04aPull = LEFT | PULL | 3,
+    L05aPull = LEFT | PULL | 4,
+    L01Pull = LEFT | PULL | 5,
+    L02Pull = LEFT | PULL | 6,
+    L03Pull = LEFT | PULL | 7,
+    L04Pull = LEFT | PULL | 8,
+    L05Pull = LEFT | PULL | 9,
+    L06Pull = LEFT | PULL | 10,
+    L07Pull = LEFT | PULL | 11,
+    L08Pull = LEFT | PULL | 12,
+    L09Pull = LEFT | PULL | 13,
+    L10Pull = LEFT | PULL | 14,
+    R01aPull = RIGHT | PULL | 0,
+    R02aPull = RIGHT | PULL | 1,
+    R03aPull = RIGHT | PULL | 2,
+    R04aPull = RIGHT | PULL | 3,
+    R05aPull = RIGHT | PULL | 4,
+    R01Pull = RIGHT | PULL | 5,
+    R02Pull = RIGHT | PULL | 6,
+    R03Pull = RIGHT | PULL | 7,
+    R04Pull = RIGHT | PULL | 8,
+    R05Pull = RIGHT | PULL | 9,
+    R06Pull = RIGHT | PULL | 10,
+    R07Pull = RIGHT | PULL | 11,
+    R08Pull = RIGHT | PULL | 12,
+    R09Pull = RIGHT | PULL | 13,
+    R10Pull = RIGHT | PULL | 14,
     MaxReed,
 };
 
 std::optional<ConcertinaReed> LeftNeighbor(ConcertinaReed reed) {
-    if ((unsigned)reed % 5 == 1) {
+    if ((unsigned)reed % 5 == 0) {
         return std::nullopt;
     } else {
         return (ConcertinaReed)((unsigned)reed - 1);
@@ -84,7 +88,7 @@ std::optional<ConcertinaReed> LeftNeighbor(ConcertinaReed reed) {
 }
 
 std::optional<ConcertinaReed> RightNeighbor(ConcertinaReed reed) {
-    if ((unsigned)reed % 5 == 5) {
+    if ((unsigned)reed % 5 == 4) {
         return std::nullopt;
     } else {
         return (ConcertinaReed)((unsigned)reed + 1);
@@ -107,6 +111,13 @@ std::optional<ConcertinaReed> DownNeighbor(ConcertinaReed reed) {
     }
 }
 
+constexpr unsigned GetColumn(ConcertinaReed reed) {
+    return (((unsigned)reed & FINGER_MASK) % 5);
+}
+
+constexpr unsigned GetRow(ConcertinaReed reed) {
+    return ((unsigned)reed & FINGER_MASK) / 5;
+}
 
 enum class ConcertinaNote : unsigned {
     B2,

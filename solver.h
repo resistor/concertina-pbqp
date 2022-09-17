@@ -275,7 +275,7 @@ public:
   }
 
   void handleAddNode(NodeId NId) {
-    assert(G.getNodeCosts(NId).getLength() > 1 &&
+    assert(G.getNodeCosts(NId).getLength() > 0 &&
            "PBQP Graph should not contain single or zero-option nodes");
     G.getNodeMetadata(NId).setup(G.getNodeCosts(NId));
   }
