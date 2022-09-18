@@ -7,38 +7,38 @@ using llvm::PBQP::RegAlloc::solve;
 
 struct ConcertinaGraph {
   PBQPRAGraph graph;
-  std::unordered_map<PBQPRAGraph::NodeId, std::vector<ConcertinaReed>>
-      node_options;
+  std::unordered_map<PBQPRAGraph::NodeId, std::vector<unsigned>> node_options;
 };
 
-ConcertinaReed lookupSolution(ConcertinaGraph &graph, PBQPRAGraph::NodeId nid,
-                              unsigned val) {
+unsigned lookupSolution(ConcertinaGraph &graph, PBQPRAGraph::NodeId nid,
+                        unsigned val) {
   return graph.node_options[nid][val];
 }
 
 auto addNote(ConcertinaGraph &graph, ConcertinaNote note) {
   // Set all allowed note->reed mappings to have zero cost.
   auto reed_range = CGWheatstoneReedMapping.equal_range(note);
-  std::vector<ConcertinaReed> node_options_vec;
+  std::vector<unsigned> node_options_vec;
   for (auto it = reed_range.first; it != reed_range.second; ++it) {
-    node_options_vec.push_back(it->second);
+    for (auto finger : FINGERS) {
+      node_options_vec.push_back((unsigned)it->second | finger);
+    }
   }
 
   PBQPRAGraph::RawVector Costs(node_options_vec.size(), 0);
   for (int i = 0; i < node_options_vec.size(); ++i) {
-    ConcertinaReed reed = node_options_vec[i];
+    unsigned reed = node_options_vec[i];
+    unsigned col = GetColumn((ConcertinaReed)reed);
 
-    // Pinky reeds get a cost penalty.
-    unsigned col = GetColumn(reed);
-    if (((unsigned)reed & HAND_MASK) == LEFT) {
-      if (col == 0 || col == 1) {
-        Costs[i] += 1;
-      }
-    } else if (((unsigned)reed & HAND_MASK) == RIGHT) {
-      if (col == 3 || col == 4) {
-        Costs[i] += 1;
-      }
+    // Apply a cost the pinky reeds.
+    if (col == 3 || col == 4) {
+      Costs[i] += 1;
     }
+
+    // Apply a cost to playing buttons with fingers other than the "home"
+    // finger.
+    unsigned finger_col = GetFingerColumn((ConcertinaReed)reed);
+    Costs[i] += std::abs((int)col - (int)finger_col);
   }
 
   auto nid = graph.graph.addNode(std::move(Costs));
@@ -47,22 +47,27 @@ auto addNote(ConcertinaGraph &graph, ConcertinaNote note) {
 }
 
 void setupSimultaneousNoteCosts(llvm::PBQP::Matrix &Costs,
-                                std::vector<ConcertinaReed> &n_options,
-                                std::vector<ConcertinaReed> &m_options) {
+                                std::vector<unsigned> &n_options,
+                                std::vector<unsigned> &m_options) {
   for (int n = 0; n < n_options.size(); ++n) {
-    ConcertinaReed n_reed = n_options[n];
+    unsigned n_reed = n_options[n];
     for (int m = 0; m < m_options.size(); ++m) {
-      ConcertinaReed m_reed = m_options[m];
+      unsigned m_reed = m_options[m];
 
       // Mismatched bellows directions are impossible, thus infinite cost.
-      if (((unsigned)n_reed & DIRECTION_MASK) !=
-          ((unsigned)m_reed & DIRECTION_MASK)) {
+      if ((n_reed & DIRECTION_MASK) != (m_reed & DIRECTION_MASK)) {
         Costs[n][m] = INFINITY;
       }
 
-      // Apply a cost to multiple
-      if (((unsigned)n_reed & HAND_MASK) == ((unsigned)m_reed & HAND_MASK) &&
-          GetColumn(n_reed) == GetColumn(m_reed)) {
+      // Using the same finger more than once is impossible.
+      if ((n_reed & FINGER_MASK) == (m_reed & FINGER_MASK)) {
+        Costs[n][m] = INFINITY;
+      }
+
+      // Apply a cost to multiple buttons in the same column.
+      if ((n_reed & HAND_MASK) == (m_reed & HAND_MASK) &&
+          GetColumn((ConcertinaReed)n_reed) ==
+              GetColumn((ConcertinaReed)m_reed)) {
         Costs[n][m] += 3;
       }
     }
@@ -80,53 +85,49 @@ auto addSimultaneousNoteEdge(ConcertinaGraph &graph, PBQPRAGraph::NodeId n1id,
 }
 
 void setupSequentialNoteCosts(llvm::PBQP::Matrix &Costs,
-                              std::vector<ConcertinaReed> n_options,
-                              std::vector<ConcertinaReed> m_options) {
+                              std::vector<unsigned> n_options,
+                              std::vector<unsigned> m_options) {
   for (int n = 0; n < n_options.size(); ++n) {
-    ConcertinaReed n_reed = n_options[n];
+    unsigned n_reed = n_options[n];
     for (int m = 0; m < m_options.size(); ++m) {
-      ConcertinaReed m_reed = m_options[m];
+      unsigned m_reed = m_options[m];
 
       // Apply a cost to changing hands.
-      if (((unsigned)n_reed & HAND_MASK) != ((unsigned)m_reed & HAND_MASK)) {
+      if ((n_reed & HAND_MASK) != (m_reed & HAND_MASK)) {
         Costs[n][m] += 1;
       }
 
       // Apply a cost to changing bellows directions and buttons simultaneously.
-      if (((unsigned)n_reed & DIRECTION_MASK) !=
-              ((unsigned)m_reed & DIRECTION_MASK) &&
-          ((unsigned)n_reed & FINGER_MASK) !=
-              ((unsigned)m_reed & FINGER_MASK)) {
+      if ((n_reed & DIRECTION_MASK) != (m_reed & DIRECTION_MASK) &&
+          (n_reed & BUTTON_MASK) != (m_reed & BUTTON_MASK)) {
         Costs[n][m] += 1;
       }
 
       // Intra-hand rules
-      if (((unsigned)n_reed & HAND_MASK) == ((unsigned)m_reed & HAND_MASK)) {
+      if ((n_reed & HAND_MASK) == (m_reed & HAND_MASK)) {
         // Apply a cost to going directly from the upper to the lower row.
-        if (GetRow(n_reed) == 2 && GetRow(m_reed) == 0 ||
-            GetRow(n_reed) == 0 && GetRow(m_reed) == 2) {
+        if (GetRow((ConcertinaReed)n_reed) == 2 &&
+                GetRow((ConcertinaReed)m_reed) == 0 ||
+            GetRow((ConcertinaReed)n_reed) == 0 &&
+                GetRow((ConcertinaReed)m_reed) == 2) {
           Costs[n][m] += 1;
         }
 
         // Apply a cost to sequential notes being assigned to reeds in the same
         // column of the 3x5 layout.
-        if (GetColumn(n_reed) == GetColumn(m_reed)) {
+        if (GetColumn((ConcertinaReed)n_reed) ==
+            GetColumn((ConcertinaReed)m_reed)) {
           Costs[n][m] += 3;
         }
 
         // Apply a cost to sequential notes that use the pinky finger.
         // This is not subsumed by the intra-column cost because the pinky
         // covers two columns.
-        if (((unsigned)n_reed & HAND_MASK) == LEFT) {
-          if ((GetColumn(n_reed) == 0 && GetColumn(m_reed) == 1) ||
-              (GetColumn(n_reed) == 1 && GetColumn(m_reed) == 0)) {
-            Costs[n][m] += 3;
-          }
-        } else {
-          if ((GetColumn(n_reed) == 3 && GetColumn(m_reed) == 4) ||
-              (GetColumn(n_reed) == 4 && GetColumn(m_reed) == 3)) {
-            Costs[n][m] += 3;
-          }
+        if ((GetColumn((ConcertinaReed)n_reed) == 3 &&
+             GetColumn((ConcertinaReed)m_reed) == 4) ||
+            (GetColumn((ConcertinaReed)n_reed) == 4 &&
+             GetColumn((ConcertinaReed)m_reed) == 3)) {
+          Costs[n][m] += 3;
         }
       }
     }
@@ -227,25 +228,26 @@ int main() {
 
   printf("Simultaneous notes:\n");
   for (auto node : nodes) {
-    ConcertinaReed n1reed =
-        lookupSolution(g, node, solution.getSelection(node));
-    printf("  Reed assigned: %s\n", GetReedName(n1reed));
+    unsigned n1reed = lookupSolution(g, node, solution.getSelection(node));
+    printf("  Reed assigned: %s\n", GetReedAndFinger(n1reed).c_str());
   }
 
   printf("Sequential notes:\n");
   for (auto node : seq_nodes) {
-    ConcertinaReed n1reed =
-        lookupSolution(g, node, solution.getSelection(node));
-    printf("  Reed assigned: %s\n", GetReedName(n1reed));
+    unsigned n1reed = lookupSolution(g, node, solution.getSelection(node));
+    printf("  Reed assigned: %s\n", GetReedAndFinger(n1reed).c_str());
   }
 
   printf("Mixed notes:\n");
   printf("  Reed assigned: %s\n",
-         GetReedName(lookupSolution(g, id2, solution.getSelection(id2))));
+         GetReedAndFinger(lookupSolution(g, id2, solution.getSelection(id2)))
+             .c_str());
   printf("  Reed assigned: %s\n",
-         GetReedName(lookupSolution(g, id9, solution.getSelection(id9))));
+         GetReedAndFinger(lookupSolution(g, id9, solution.getSelection(id9)))
+             .c_str());
   printf("  Reed assigned: %s\n",
-         GetReedName(lookupSolution(g, id4, solution.getSelection(id4))));
+         GetReedAndFinger(lookupSolution(g, id4, solution.getSelection(id4)))
+             .c_str());
 
   return 0;
 }

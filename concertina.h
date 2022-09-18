@@ -1,6 +1,8 @@
 #pragma once
 
+#include <array>
 #include <optional>
+#include <string>
 #include <unordered_map>
 
 constexpr unsigned LEFT = 0 << 4;
@@ -11,78 +13,90 @@ constexpr unsigned PUSH = 0 << 5;
 constexpr unsigned PULL = 1 << 5;
 constexpr unsigned DIRECTION_MASK = 1 << 5;
 
-constexpr unsigned FINGER_MASK = 0xF;
+constexpr unsigned BUTTON_MASK = 0xF;
+
+constexpr unsigned FINGER1 = 0 << 6;
+constexpr unsigned FINGER2 = 1 << 6;
+constexpr unsigned FINGER3 = 2 << 6;
+constexpr unsigned FINGER4 = 3 << 6;
+constexpr unsigned FINGER_MASK = 0xC0;
+
+static std::array<unsigned, 4> FINGERS = {FINGER1, FINGER2, FINGER3, FINGER4};
 
 enum class ConcertinaReed : unsigned {
-  L01aPush = LEFT | PUSH | 0,
-  L02aPush = LEFT | PUSH | 1,
+  L01aPush = LEFT | PUSH | 4,
+  L02aPush = LEFT | PUSH | 3,
   L03aPush = LEFT | PUSH | 2,
-  L04aPush = LEFT | PUSH | 3,
-  L05aPush = LEFT | PUSH | 4,
-  L01Push = LEFT | PUSH | 5,
-  L02Push = LEFT | PUSH | 6,
+  L04aPush = LEFT | PUSH | 1,
+  L05aPush = LEFT | PUSH | 0,
+  L01Push = LEFT | PUSH | 9,
+  L02Push = LEFT | PUSH | 8,
   L03Push = LEFT | PUSH | 7,
-  L04Push = LEFT | PUSH | 8,
-  L05Push = LEFT | PUSH | 9,
-  L06Push = LEFT | PUSH | 10,
-  L07Push = LEFT | PUSH | 11,
+  L04Push = LEFT | PUSH | 6,
+  L05Push = LEFT | PUSH | 5,
+  L06Push = LEFT | PUSH | 14,
+  L07Push = LEFT | PUSH | 13,
   L08Push = LEFT | PUSH | 12,
-  L09Push = LEFT | PUSH | 13,
-  L10Push = LEFT | PUSH | 14,
-  R01aPush = RIGHT | PUSH | 0,
-  R02aPush = RIGHT | PUSH | 1,
+  L09Push = LEFT | PUSH | 11,
+  L10Push = LEFT | PUSH | 10,
+  R01aPush = RIGHT | PUSH | 4,
+  R02aPush = RIGHT | PUSH | 3,
   R03aPush = RIGHT | PUSH | 2,
-  R04aPush = RIGHT | PUSH | 3,
-  R05aPush = RIGHT | PUSH | 4,
-  R01Push = RIGHT | PUSH | 5,
-  R02Push = RIGHT | PUSH | 6,
+  R04aPush = RIGHT | PUSH | 1,
+  R05aPush = RIGHT | PUSH | 0,
+  R01Push = RIGHT | PUSH | 9,
+  R02Push = RIGHT | PUSH | 8,
   R03Push = RIGHT | PUSH | 7,
-  R04Push = RIGHT | PUSH | 8,
-  R05Push = RIGHT | PUSH | 9,
-  R06Push = RIGHT | PUSH | 10,
-  R07Push = RIGHT | PUSH | 11,
+  R04Push = RIGHT | PUSH | 6,
+  R05Push = RIGHT | PUSH | 5,
+  R06Push = RIGHT | PUSH | 14,
+  R07Push = RIGHT | PUSH | 13,
   R08Push = RIGHT | PUSH | 12,
-  R09Push = RIGHT | PUSH | 13,
-  R10Push = RIGHT | PUSH | 14,
-  L01aPull = LEFT | PULL | 0,
-  L02aPull = LEFT | PULL | 1,
+  R09Push = RIGHT | PUSH | 11,
+  R10Push = RIGHT | PUSH | 10,
+  L01aPull = LEFT | PULL | 4,
+  L02aPull = LEFT | PULL | 3,
   L03aPull = LEFT | PULL | 2,
-  L04aPull = LEFT | PULL | 3,
-  L05aPull = LEFT | PULL | 4,
-  L01Pull = LEFT | PULL | 5,
-  L02Pull = LEFT | PULL | 6,
+  L04aPull = LEFT | PULL | 1,
+  L05aPull = LEFT | PULL | 0,
+  L01Pull = LEFT | PULL | 9,
+  L02Pull = LEFT | PULL | 8,
   L03Pull = LEFT | PULL | 7,
-  L04Pull = LEFT | PULL | 8,
-  L05Pull = LEFT | PULL | 9,
-  L06Pull = LEFT | PULL | 10,
-  L07Pull = LEFT | PULL | 11,
+  L04Pull = LEFT | PULL | 6,
+  L05Pull = LEFT | PULL | 5,
+  L06Pull = LEFT | PULL | 14,
+  L07Pull = LEFT | PULL | 13,
   L08Pull = LEFT | PULL | 12,
-  L09Pull = LEFT | PULL | 13,
-  L10Pull = LEFT | PULL | 14,
-  R01aPull = RIGHT | PULL | 0,
-  R02aPull = RIGHT | PULL | 1,
+  L09Pull = LEFT | PULL | 11,
+  L10Pull = LEFT | PULL | 10,
+  R01aPull = RIGHT | PULL | 4,
+  R02aPull = RIGHT | PULL | 3,
   R03aPull = RIGHT | PULL | 2,
-  R04aPull = RIGHT | PULL | 3,
-  R05aPull = RIGHT | PULL | 4,
-  R01Pull = RIGHT | PULL | 5,
-  R02Pull = RIGHT | PULL | 6,
+  R04aPull = RIGHT | PULL | 1,
+  R05aPull = RIGHT | PULL | 0,
+  R01Pull = RIGHT | PULL | 9,
+  R02Pull = RIGHT | PULL | 8,
   R03Pull = RIGHT | PULL | 7,
-  R04Pull = RIGHT | PULL | 8,
-  R05Pull = RIGHT | PULL | 9,
-  R06Pull = RIGHT | PULL | 10,
-  R07Pull = RIGHT | PULL | 11,
+  R04Pull = RIGHT | PULL | 6,
+  R05Pull = RIGHT | PULL | 5,
+  R06Pull = RIGHT | PULL | 14,
+  R07Pull = RIGHT | PULL | 13,
   R08Pull = RIGHT | PULL | 12,
-  R09Pull = RIGHT | PULL | 13,
-  R10Pull = RIGHT | PULL | 14,
+  R09Pull = RIGHT | PULL | 11,
+  R10Pull = RIGHT | PULL | 10,
   MaxReed,
 };
 
 constexpr unsigned GetColumn(ConcertinaReed reed) {
-  return (((unsigned)reed & FINGER_MASK) % 5);
+  return (((unsigned)reed & BUTTON_MASK) % 5);
 }
 
 constexpr unsigned GetRow(ConcertinaReed reed) {
-  return ((unsigned)reed & FINGER_MASK) / 5;
+  return ((unsigned)reed & BUTTON_MASK) / 5;
+}
+
+constexpr unsigned GetFingerColumn(ConcertinaReed reed) {
+  return (unsigned)reed >> 6;
 }
 
 enum class ConcertinaNote : unsigned {
@@ -390,5 +404,21 @@ const char* GetReedName(ConcertinaReed reed) {
     default:
       printf("UNIMPLEMENTED REED PRINTING %d\n", (unsigned)reed);
       exit(1);
+  }
+}
+
+std::string GetReedAndFinger(unsigned reed) {
+  std::string reed_name = GetReedName((ConcertinaReed)(reed & ~FINGER_MASK));
+  switch (reed & FINGER_MASK) {
+    case FINGER1:
+      return reed_name + ", index";
+    case FINGER2:
+      return reed_name + ", middle";
+    case FINGER3:
+      return reed_name + ", ring";
+    case FINGER4:
+      return reed_name + ", pinky";
+    default:
+      exit(-1);
   }
 }
