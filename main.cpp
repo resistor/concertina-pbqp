@@ -52,8 +52,9 @@ auto addNote(ConcertinaGraph &graph, ConcertinaNote note) {
         Costs[i] += 1;
       }
     } else {
-      int finger_cost = (int)col - (int)finger_col;
-      Costs[i] += std::abs(finger_cost);
+      if (col != finger_col) {
+        Costs[i] += 2;
+      }
     }
   }
 
@@ -116,8 +117,9 @@ void setupSequentialNoteCosts(llvm::PBQP::Matrix &Costs,
     for (int m = 0; m < m_options.size(); ++m) {
       unsigned m_reed = m_options[m];
 
-      // Apply a cost to anything *other* than simple bellows reversal.
-      if ((n_reed ^ DIRECTION_MASK) != m_reed) {
+      // Apply a cost to anything *other* than simple bellows reversal
+      // or a repeated note.
+      if ((n_reed & ~DIRECTION_MASK) != (m_reed & ~DIRECTION_MASK)) {
         Costs[n][m] += 1;
       }
 
@@ -129,9 +131,9 @@ void setupSequentialNoteCosts(llvm::PBQP::Matrix &Costs,
       // Intra-hand rules
       if ((n_reed & HAND_MASK) == (m_reed & HAND_MASK)) {
         // Apply a cost to going directly from the upper to the lower row.
-        if (GetRow((ConcertinaReed)n_reed) == 2 &&
-            GetRow((ConcertinaReed)n_reed) == 0 &&
-            GetRow((ConcertinaReed)m_reed) == 2) {
+        auto n_row = GetRow((ConcertinaReed)n_reed);
+        auto m_row = GetRow((ConcertinaReed)m_reed);
+        if ((n_row == 0 && m_row == 2) || (n_row == 2 && m_row == 0)) {
           Costs[n][m] += 1;
         }
 
