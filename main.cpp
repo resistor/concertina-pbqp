@@ -1,5 +1,7 @@
 #include "concertina.h"
 #include "solver.h"
+#include "MidiFile.h"
+#include <unordered_set>
 
 using llvm::PBQP::Solution;
 using llvm::PBQP::RegAlloc::PBQPRAGraph;
@@ -178,7 +180,10 @@ auto addSequentialAndSimultaneousNoteEdge(ConcertinaGraph &graph,
   return graph.graph.addEdge(n1id, n2id, std::move(Costs));
 }
 
+void test_midi();
+
 int main() {
+  test_midi();
   ConcertinaGraph g{{{}}, {}};
   /*
     // Construct the nodes of the PBQP graph, representing the individual notes.
@@ -545,4 +550,102 @@ int main() {
                .c_str());
                */
   return 0;
+}
+
+ConcertinaNote midi2note(uint8_t n) {
+  switch (n) {
+    case 84: return ConcertinaNote::C5;
+    case 83: return ConcertinaNote::B5;
+    case 81: return ConcertinaNote::A5;
+    case 79: return ConcertinaNote::G5;
+    case 78: return ConcertinaNote::Fsharp5;
+    case 76: return ConcertinaNote::E5;
+    case 74: return ConcertinaNote::D5;
+    case 72: return ConcertinaNote::C5;
+    case 71: return ConcertinaNote::B4;
+    case 69: return ConcertinaNote::A4;
+    case 67: return ConcertinaNote::G4;
+    case 62: return ConcertinaNote::D4;
+    case 59: return ConcertinaNote::B3;
+    case 55: return ConcertinaNote::G3;
+    case 43: return ConcertinaNote::G2;
+    case 38: return ConcertinaNote::D2;
+    default: {
+      fprintf(stderr, "Unknown note: %u\n", n);
+      exit(-1);
+    }
+  }
+}
+
+void test_midi() {
+  smf::MidiFile midifile;
+  midifile.read("sample.mid");
+
+  while (midifile.getTrackCount() > 1) {
+    midifile.mergeTracks(0, 1);
+  }
+  int tracks = midifile.getTrackCount();
+
+  midifile.sortTracks();
+  midifile.doTimeAnalysis();
+  midifile.linkNotePairs();
+
+  ConcertinaGraph g{{{}}, {}};
+
+  std::unordered_map<const smf::MidiEvent*, PBQPRAGraph::NodeId> event_map;
+  std::unordered_set<PBQPRAGraph::NodeId> live_notes;
+  std::unordered_set<PBQPRAGraph::NodeId> recently_ended;
+  int last_tick = 0;
+  bool last_event_was_note_on = false;
+
+  for (int i = 0, e = midifile[0].getEventCount(); i != e; ++i) {
+    const auto& event = midifile[0][i];
+    if (event.isNoteOn()) {
+      uint8_t note = event[1];
+
+      auto node_id = addNote(g, midi2note(note));
+      event_map[&event] = node_id;
+
+      for (auto simul_id : live_notes) {
+        addSimultaneousNoteEdge(g, simul_id, node_id);
+      }
+
+      live_notes.insert(node_id);
+
+      if (last_event_was_note_on && std::abs(event.tick - last_tick) <= 10) {
+        recently_ended.clear();
+      }
+
+      for (auto seq_id : recently_ended) {
+        addSequentialNoteEdge(g, seq_id, node_id);
+      }
+
+      last_event_was_note_on = true;
+    } else if (event.isNoteOff()) {
+      uint8_t note = event[1];
+      
+      auto node_id = event_map[event.getLinkedEvent()];
+      live_notes.erase(node_id);
+
+      if (std::abs(event.tick - last_tick) <= 10) {
+        recently_ended.clear();
+      }
+
+      recently_ended.insert(node_id);
+      last_event_was_note_on = false;
+    }
+
+    last_tick = event.tick;
+  }
+
+  Solution solution = solve(g.graph);
+
+  for (int i = 0, e = midifile[0].getEventCount(); i != e; ++i) {
+    const auto& event = midifile[0][i];
+    if (!event.isNoteOn()) continue;
+    auto node = event_map[&event];
+    unsigned n1reed = lookupSolution(g, node, solution.getSelection(node));
+
+    printf("Time: %d, Reed: %s\n", event.tick, GetReedAndFinger(n1reed).c_str());
+  }
 }
