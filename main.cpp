@@ -2,6 +2,10 @@
 #include "solver.h"
 #include "MidiFile.h"
 #include <unordered_set>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
 
 using llvm::PBQP::Solution;
 using llvm::PBQP::RegAlloc::PBQPRAGraph;
@@ -72,6 +76,11 @@ void setupSimultaneousNoteCosts(llvm::PBQP::Matrix &Costs,
     unsigned n_reed = n_options[n];
     for (int m = 0; m < m_options.size(); ++m) {
       unsigned m_reed = m_options[m];
+      if (n_reed == m_reed) {
+        Costs[n][m] = -INFINITY;
+        return;
+      }
+
 
       // Mismatched bellows directions are impossible, thus infinite cost.
       if ((n_reed & DIRECTION_MASK) != (m_reed & DIRECTION_MASK)) {
@@ -184,6 +193,7 @@ void test_midi();
 
 int main() {
   test_midi();
+
   ConcertinaGraph g{{{}}, {}};
   /*
     // Construct the nodes of the PBQP graph, representing the individual notes.
@@ -196,261 +206,99 @@ int main() {
     */
 
   std::vector<PBQPRAGraph::NodeId> seq_nodes = {
-      // loop 0
-      addNote(g, ConcertinaNote::A4),  // 0
+      addNote(g, ConcertinaNote::B5),
 
-      // 1
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::C5),
-
-      // 8
-      addNote(g, ConcertinaNote::Bflat4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::Bflat4),
-
-      // 11
-      addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::F5),
       addNote(g, ConcertinaNote::A5),
       addNote(g, ConcertinaNote::G5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::D5),
 
-      // 18
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::G5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::C5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::C5),
-
-      // 26
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::C5),
-
-      // 33
-      addNote(g, ConcertinaNote::Bflat4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::Bflat4),
-
-      // 36
-      addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::A5),
-      addNote(g, ConcertinaNote::G5),
-      addNote(g, ConcertinaNote::F5),
       addNote(g, ConcertinaNote::E5),
 
-      // 43
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::D5),
-
-      // loop 1 - 46
-      addNote(g, ConcertinaNote::E5),
-
-      // 47
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::G5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
-
-      // 53
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
-
-      // 59
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::A5),
-      addNote(g, ConcertinaNote::C5),
-      addNote(g, ConcertinaNote::F5),
       addNote(g, ConcertinaNote::A5),
 
-      // 65
-      addNote(g, ConcertinaNote::Bflat4),
+      addNote(g, ConcertinaNote::A5),
+      addNote(g, ConcertinaNote::G5),
+      addNote(g, ConcertinaNote::G5),
+
       addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::A4),
+      addNote(g, ConcertinaNote::G5),
+
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::E5),
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::E5),
+      addNote(g, ConcertinaNote::E5),
+      addNote(g, ConcertinaNote::D5),
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::C6),
+      addNote(g, ConcertinaNote::C6),
+      addNote(g, ConcertinaNote::A5),
+
+      addNote(g, ConcertinaNote::Fsharp5),
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::E5),
+      addNote(g, ConcertinaNote::E5),
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::C5),
+      addNote(g, ConcertinaNote::D5),
+
       addNote(g, ConcertinaNote::B4),
-      addNote(g, ConcertinaNote::Csharp5),
-
-      // 71
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::Csharp5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::C5),
-
-      // 79
-      addNote(g, ConcertinaNote::Bflat4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::Bflat4),
-
-      // 82
       addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::A5),
-      addNote(g, ConcertinaNote::A5),
-      addNote(g, ConcertinaNote::G5),
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::E5),
+      addNote(g, ConcertinaNote::G4),
 
-      // 88
-      addNote(g, ConcertinaNote::F5),
-      addNote(g, ConcertinaNote::D5),
-      addNote(g, ConcertinaNote::D5),
+      addNote(g, ConcertinaNote::G4),
   };
 
   std::vector<PBQPRAGraph::NodeId> seq_nodes2 = {
-      // loop 0
-      addNote(g, ConcertinaNote::A3),  // 0
+      addNote(g, ConcertinaNote::D5),
 
-      // 1
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::C4),
+      addNote(g, ConcertinaNote::D5),
+      addNote(g, ConcertinaNote::G5),
 
-      // 8
-      addNote(g, ConcertinaNote::Bflat3),
+      addNote(g, ConcertinaNote::C5),
+
+      addNote(g, ConcertinaNote::C5),
+
+      addNote(g, ConcertinaNote::C5),
+      addNote(g, ConcertinaNote::G5),
+      addNote(g, ConcertinaNote::G5),
+
+      addNote(g, ConcertinaNote::B4),
+      addNote(g, ConcertinaNote::B4),
+
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::B4),
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::B4),
+      addNote(g, ConcertinaNote::E5),
+      addNote(g, ConcertinaNote::D5),
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::A5),
+      addNote(g, ConcertinaNote::A5),
+      addNote(g, ConcertinaNote::Fsharp5),
+
+      addNote(g, ConcertinaNote::Fsharp5),
+      addNote(g, ConcertinaNote::D5),
+
+      addNote(g, ConcertinaNote::C5),
+      addNote(g, ConcertinaNote::C5),
+      addNote(g, ConcertinaNote::B4),
+
+      addNote(g, ConcertinaNote::A4),
+      addNote(g, ConcertinaNote::B4),
+
+      addNote(g, ConcertinaNote::B4),
+      addNote(g, ConcertinaNote::A4),
+      addNote(g, ConcertinaNote::G4),
+
       addNote(g, ConcertinaNote::G3),
-      addNote(g, ConcertinaNote::Bflat3),
-
-      // 11
-      addNote(g, ConcertinaNote::A3),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::D4),
-
-      // 18
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::C4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::C4),
-
-      // 26
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::C4),
-
-      // 33
-      addNote(g, ConcertinaNote::Bflat3),
-      addNote(g, ConcertinaNote::G3),
-      addNote(g, ConcertinaNote::Bflat3),
-
-      // 36
-      addNote(g, ConcertinaNote::A3),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-
-      // 43
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::D4),
-
-      // loop 1 - 46
-      addNote(g, ConcertinaNote::E4),
-
-      // 47
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-
-      // 53
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-
-      // 59
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::C4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::A4),
-
-      // 65
-      addNote(g, ConcertinaNote::Bflat3),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::A3),
-      addNote(g, ConcertinaNote::B3),
-      addNote(g, ConcertinaNote::Csharp4),
-
-      // 71
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::Csharp4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::C4),
-
-      // 79
-      addNote(g, ConcertinaNote::Bflat3),
-      addNote(g, ConcertinaNote::G3),
-      addNote(g, ConcertinaNote::Bflat3),
-
-      // 82
-      addNote(g, ConcertinaNote::A3),
-      addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::A4),
-      addNote(g, ConcertinaNote::G4),
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::E4),
-
-      // 88
-      addNote(g, ConcertinaNote::F4),
-      addNote(g, ConcertinaNote::D4),
-      addNote(g, ConcertinaNote::D4),
   };
 
   /*
@@ -471,18 +319,7 @@ int main() {
     addSequentialNoteEdge(g, seq_nodes2[i], seq_nodes2[i + 1]);
     addSequentialNoteEdge(g, seq_nodes2[i], seq_nodes[i + 1]);
   }
-  addSimultaneousNoteEdge(g, seq_nodes[90], seq_nodes2[90]);
-
-  addSequentialNoteEdge(g, seq_nodes[45], seq_nodes[0]);
-  addSequentialNoteEdge(g, seq_nodes[90], seq_nodes[46]);
-  addSequentialNoteEdge(g, seq_nodes2[45], seq_nodes2[0]);
-  addSequentialNoteEdge(g, seq_nodes2[90], seq_nodes2[46]);
-  addSequentialNoteEdge(g, seq_nodes[45], seq_nodes2[0]);
-  addSequentialNoteEdge(g, seq_nodes[90], seq_nodes2[46]);
-  addSequentialNoteEdge(g, seq_nodes2[45], seq_nodes[0]);
-  addSequentialNoteEdge(g, seq_nodes2[90], seq_nodes[46]);
-  // addSequentialNoteEdge(g, seq_nodes[49], seq_nodes[26]);
-  // addSequentialNoteEdge(g, seq_nodes[75], seq_nodes[50]);
+  addSimultaneousNoteEdge(g, seq_nodes[seq_nodes.size()-1], seq_nodes2[seq_nodes.size()-1]);
 
   /*
     PBQPRAGraph::NodeId id2 = addNote(g, ConcertinaNote::E5);
@@ -557,19 +394,38 @@ ConcertinaNote midi2note(uint8_t n) {
     case 84: return ConcertinaNote::C5;
     case 83: return ConcertinaNote::B5;
     case 81: return ConcertinaNote::A5;
+    case 80: return ConcertinaNote::Gsharp5;
     case 79: return ConcertinaNote::G5;
     case 78: return ConcertinaNote::Fsharp5;
+    case 77: return ConcertinaNote::F5;
     case 76: return ConcertinaNote::E5;
+    case 75: return ConcertinaNote::Dsharp5;
     case 74: return ConcertinaNote::D5;
+    case 73: return ConcertinaNote::Csharp5;
     case 72: return ConcertinaNote::C5;
     case 71: return ConcertinaNote::B4;
+    case 70: return ConcertinaNote::Bflat4;
     case 69: return ConcertinaNote::A4;
+    case 68: return ConcertinaNote::Gsharp4;
     case 67: return ConcertinaNote::G4;
+    case 66: return ConcertinaNote::Fsharp4;
+    case 65: return ConcertinaNote::F4;
+    case 64: return ConcertinaNote::E4;
+    case 63: return ConcertinaNote::Dsharp4;
     case 62: return ConcertinaNote::D4;
+    case 61: return ConcertinaNote::Csharp4;
+    case 60: return ConcertinaNote::C4;
     case 59: return ConcertinaNote::B3;
+    case 58: return ConcertinaNote::Bflat3;
+    case 57: return ConcertinaNote::A3;
     case 55: return ConcertinaNote::G3;
+    case 54: return ConcertinaNote::Fsharp3;
+    case 53: return ConcertinaNote::F3;
+    case 52: return ConcertinaNote::E3;
+    case 48: return ConcertinaNote::C3;
     case 43: return ConcertinaNote::G2;
     case 38: return ConcertinaNote::D2;
+    case 36: return ConcertinaNote::C2;
     default: {
       fprintf(stderr, "Unknown note: %u\n", n);
       exit(-1);
@@ -612,7 +468,7 @@ void test_midi() {
 
       live_notes.insert(node_id);
 
-      if (last_event_was_note_on && std::abs(event.tick - last_tick) <= 10) {
+      if (last_event_was_note_on && event.tick - last_tick > 10) {
         recently_ended.clear();
       }
 
@@ -627,7 +483,7 @@ void test_midi() {
       auto node_id = event_map[event.getLinkedEvent()];
       live_notes.erase(node_id);
 
-      if (std::abs(event.tick - last_tick) <= 10) {
+      if (event.tick - last_tick > 10) {
         recently_ended.clear();
       }
 
@@ -640,12 +496,20 @@ void test_midi() {
 
   Solution solution = solve(g.graph);
 
+  last_tick = 0;
+  bool first = true;
   for (int i = 0, e = midifile[0].getEventCount(); i != e; ++i) {
     const auto& event = midifile[0][i];
     if (!event.isNoteOn()) continue;
+    if (first || event.tick - last_tick > 10) {
+      printf("\nTime %d:", event.tick);
+    }
     auto node = event_map[&event];
     unsigned n1reed = lookupSolution(g, node, solution.getSelection(node));
 
-    printf("Time: %d, Reed: %s\n", event.tick, GetReedAndFinger(n1reed).c_str());
+    printf(" (%s)", GetReedAndFinger(n1reed).c_str()); 
+    last_tick = event.tick;
+    first = false;
   }
+  printf("\n");
 }

@@ -121,23 +121,11 @@ public:
 
   GraphMetadata() {}
 
-  void setNodeIdForVReg(Register VReg, GraphBase::NodeId NId) {
-    VRegToNodeId[VReg.id()] = NId;
-  }
-
-  GraphBase::NodeId getNodeIdForVReg(Register VReg) const {
-    auto VRegItr = VRegToNodeId.find(VReg);
-    if (VRegItr == VRegToNodeId.end())
-      return GraphBase::invalidNodeId();
-    return VRegItr->second;
-  }
-
   AllowedRegVecRef getAllowedRegs(AllowedRegVector Allowed) {
     return AllowedRegVecs.getValue(std::move(Allowed));
   }
 
 private:
-  DenseMap<Register, GraphBase::NodeId> VRegToNodeId;
   AllowedRegVecPool AllowedRegVecs;
 };
 
